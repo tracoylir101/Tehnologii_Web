@@ -1,0 +1,24 @@
+[
+    {
+        "name": "Biblioteca Centrală",
+        "type": "study",
+        "location": "Clădirea A",
+        "program": "08:00 - 20:00",
+        "tags": ["studiu", "cărți", "silence"]
+    },
+    {
+        "name": "Cantina Studențească",
+        "type": "food",
+        "location": "Clădirea C",
+        "program": "10:00 - 18:00",
+        "tags": ["mâncare", "meniul zilei"]
+    },
+    {
+        "name": "Sala de Evenimente",
+        "type": "events",
+        "location": "Clădirea B",
+        "program": "Variabil",
+        "tags": ["evenimente", "conferințe"]
+    }
+]
+
