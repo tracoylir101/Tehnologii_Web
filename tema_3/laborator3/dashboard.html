@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Dashboard Utilizator</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Acasă</a></li>
+                <li><a href="preferences.html">Setări Preferințe</a></li>
+                <li><a href="cookies-info.html">Vizualizare Cookies</a></li>
+                <li><a href="cart.html">Coș de Cumpărături</a></li>
+                <li><button id="logout-btn" class="logout-btn">Deconectare</button></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section>
+            <h2>Informații Sesiune</h2>
+            <div class="session-info">
+                <div class="info-item">
+                    <strong>ID Sesiune:</strong>
+                    <span id="session-id">-</span>
+                </div>
+                <div class="info-item">
+                    <strong>Username:</strong>
+                    <span id="username">-</span>
+                </div>
+                <div class="info-item">
+                    <strong>Email:</strong>
+                    <span id="email">-</span>
+                </div>
+                <div class="info-item">
+                    <strong>Ora autentificării:</strong>
+                    <span id="login-time">-</span>
+                </div>
+                <div class="info-item">
+                    <strong>Durata sesiunii:</strong>
+                    <span id="session-duration">00:00:00</span>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>Date brute din sessionStorage (Debug)</h2>
+            <div class="raw-data">
+                <pre id="raw-sessionstorage"></pre>
+            </div>
+        </section>
+
+        <section>
+            <a href="dashboard.html" target="_blank" class="experiment-link">Deschide Dashboard în tab nou</a>
+        </section>
+    </main>
+
+    <script src="js/cookies.js"></script>
+    <script src="js/storage.js"></script>
+    <script>
+        // Variabilă pentru a stoca timpul de start al sesiunii
+        let sessionStartTime = null;
+
+        // Funcție pentru verificarea autentificării
+        function checkAuthentication() {
+            const session = StorageManager.getSession('current_session');
+            if (!session) {
+                // Nu există sesiune, redirecționare către login
+                window.location.href = 'login.html';
+                return null;
+            }
+            return session;
+        }
+
+        // Funcție pentru aplicarea temei curente
+        function applyTheme() {
+            const theme = CookieManager.get('theme') || 'light';
+            document.body.className = theme;
+        }
+
+        // Funcție pentru aplicarea dimensiunii fontului
+        function applyFontSize() {
+            const fontSize = StorageManager.getLocal('font-size') || '16px';
+            document.body.style.fontSize = fontSize;
+        }
+
+        // Funcție pentru formatarea datei
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString('ro-RO', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        // Funcție pentru calcularea și formatarea duratei
+        function formatDuration(milliseconds) {
+            const totalSeconds = Math.floor(milliseconds / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Funcție pentru actualizarea duratei sesiunii
+        function updateSessionDuration() {
+            if (!sessionStartTime) return;
+
+            const now = new Date();
+            const duration = now - sessionStartTime;
+            const formattedDuration = formatDuration(duration);
+
+            document.getElementById('session-duration').textContent = formattedDuration;
+        }
+
+        // Funcție pentru afișarea informațiilor despre sesiune
+        function displaySessionInfo(session) {
+            document.getElementById('session-id').textContent = session.sessionId;
+            document.getElementById('username').textContent = session.username;
+            document.getElementById('email').textContent = session.email;
+            document.getElementById('login-time').textContent = formatDate(session.loginTime);
+
+            // Setare timpul de start pentru calcularea duratei
+            sessionStartTime = new Date(session.loginTime);
+
+            // Actualizare imediată a duratei
+            updateSessionDuration();
+        }
+
+        // Funcție pentru afișarea datelor brute din sessionStorage
+        function displayRawSessionStorage() {
+            const allSessionData = StorageManager.getAllSession();
+            document.getElementById('raw-sessionstorage').textContent = JSON.stringify(allSessionData, null, 2);
+        }
+
+        // Funcție pentru deconectare
+        function logout() {
+            if (confirm('Ești sigur că vrei să te deconectezi?')) {
+                // Ștergere sesiune
+                StorageManager.removeSession('current_session');
+
+                // Redirecționare către login
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Inițializare când pagina se încarcă
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificare autentificare
+            const session = checkAuthentication();
+            if (!session) return; // Redirecționare deja făcută
+
+            applyTheme();
+            applyFontSize();
+            displaySessionInfo(session);
+            displayRawSessionStorage();
+
+            // Actualizare durată sesiune la fiecare secundă
+            setInterval(updateSessionDuration, 1000);
+
+            // Adăugare event listener pentru butonul de deconectare
+            document.getElementById('logout-btn').addEventListener('click', logout);
+        });
+    </script>
+</body>
+</html>

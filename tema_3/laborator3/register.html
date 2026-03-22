@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Înregistrare</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Înregistrare</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Acasă</a></li>
+                <li><a href="preferences.html">Setări Preferințe</a></li>
+                <li><a href="cookies-info.html">Vizualizare Cookies</a></li>
+                <li><a href="login.html">Autentificare</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section>
+            <h2>Creați un cont nou</h2>
+
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="username">Nume utilizator:</label>
+                    <input type="text" id="username" name="username" required placeholder="Minim 3 caractere" minlength="3">
+                    <small class="field-hint">Numele de utilizator trebuie să aibă minim 3 caractere și să fie unic.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required placeholder="adresa@email.com">
+                    <small class="field-hint">Introduceți o adresă de email validă și unică.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Parolă:</label>
+                    <input type="password" id="password" name="password" required placeholder="Minim 6 caractere" minlength="6">
+                    <small class="field-hint">Parola trebuie să aibă minim 6 caractere.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm-password">Confirmare parolă:</label>
+                    <input type="password" id="confirm-password" name="confirm-password" required placeholder="Repetați parola">
+                    <small class="field-hint">Repetați parola introdusă mai sus.</small>
+                </div>
+
+                <button type="submit">Înregistrare</button>
+            </form>
+
+            <div id="error-message" class="error-message" style="display: none;"></div>
+            <div id="success-message" class="success-message" style="display: none;"></div>
+
+            <p class="login-link">
+                Aveți deja cont? <a href="login.html">Conectați-vă aici</a>
+            </p>
+        </section>
+    </main>
+
+    <script src="js/cookies.js"></script>
+    <script src="js/storage.js"></script>
+    <script>
+        // Funcție pentru aplicarea temei curente
+        function applyTheme() {
+            const theme = CookieManager.get('theme') || 'light';
+            document.body.className = theme;
+        }
+
+        // Funcție pentru aplicarea dimensiunii fontului
+        function applyFontSize() {
+            const fontSize = StorageManager.getLocal('font-size') || '16px';
+            document.body.style.fontSize = fontSize;
+        }
+
+        // Funcție pentru validarea formatului email
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        // Funcție pentru verificarea disponibilității username-ului
+        function isUsernameAvailable(username) {
+            const users = StorageManager.getLocal('users') || [];
+            return !users.some(user => user.username === username);
+        }
+
+        // Funcție pentru verificarea disponibilității email-ului
+        function isEmailAvailable(email) {
+            const users = StorageManager.getLocal('users') || [];
+            return !users.some(user => user.email === email);
+        }
+
+        // Funcție pentru generarea unui ID unic pentru utilizator
+        function generateUserId() {
+            const users = StorageManager.getLocal('users') || [];
+            const maxId = users.length > 0 ? Math.max(...users.map(user => user.id)) : 0;
+            return maxId + 1;
+        }
+
+        // Funcție pentru înregistrarea utilizatorului
+        function registerUser(userData) {
+            const users = StorageManager.getLocal('users') || [];
+            const newUser = {
+                id: generateUserId(),
+                username: userData.username,
+                email: userData.email,
+                password: userData.password
+            };
+
+            users.push(newUser);
+            StorageManager.setLocal('users', users);
+            return newUser;
+        }
+
+        // Funcție pentru gestionarea înregistrării
+        function handleRegistration(event) {
+            event.preventDefault();
+
+            // Ascundere mesaje anterioare
+            document.getElementById('error-message').style.display = 'none';
+            document.getElementById('success-message').style.display = 'none';
+
+            // Obținere valori din formular
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+
+            // Validări
+            if (!username || !email || !password || !confirmPassword) {
+                showError('Vă rugăm să completați toate câmpurile.');
+                return;
+            }
+
+            if (username.length < 3) {
+                showError('Numele de utilizator trebuie să aibă minim 3 caractere.');
+                return;
+            }
+
+            if (!isValidEmail(email)) {
+                showError('Adresa de email nu este validă.');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError('Parola trebuie să aibă minim 6 caractere.');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showError('Parolele nu coincid.');
+                return;
+            }
+
+            if (!isUsernameAvailable(username)) {
+                showError('Acest nume de utilizator este deja folosit.');
+                return;
+            }
+
+            if (!isEmailAvailable(email)) {
+                showError('Această adresă de email este deja înregistrată.');
+                return;
+            }
+
+            // Înregistrare utilizator
+            try {
+                const newUser = registerUser({ username, email, password });
+                showSuccess(`Contul pentru ${newUser.username} a fost creat cu succes! Veți fi redirecționat către pagina de autentificare...`);
+
+                // Resetare formular
+                document.getElementById('register-form').reset();
+
+                // Redirecționare către login după 3 secunde
+                setTimeout(function() {
+                    window.location.href = 'login.html';
+                }, 3000);
+            } catch (error) {
+                showError('A apărut o eroare la înregistrare. Vă rugăm să încercați din nou.');
+                console.error('Eroare înregistrare:', error);
+            }
+        }
+
+        // Funcție pentru afișarea erorilor
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // Funcție pentru afișarea mesajelor de succes
+        function showSuccess(message) {
+            const successDiv = document.getElementById('success-message');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            successDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // Inițializare când pagina se încarcă
+        document.addEventListener('DOMContentLoaded', function() {
+            applyTheme();
+            applyFontSize();
+
+            // Adăugare event listener pentru formular
+            document.getElementById('register-form').addEventListener('submit', handleRegistration);
+        });
+    </script>
+</body>
+</html>

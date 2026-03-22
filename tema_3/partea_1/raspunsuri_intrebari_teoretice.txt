@@ -1,0 +1,26 @@
+1. Care sunt cele 4 metode HTTP principale și când se folosește fiecare?
+GET - cere date dintr-o anumita resursa
+POST - trimite date unui server pentru a crea sau actualiza o resursa
+PUT - asemanator cu POST, dar inlocuieste complet datele din resursa
+DELETE - sterge o resursa
+
+2. Ce semnifică codurile de status: 200, 301, 400, 401, 403, 404, 500?
+200 - "OK", metoda a fost executata cu succes
+301 - "Moved Permanently", resursa ceruta a fost mutata definitiv in URL-ul din header-ul Location
+400 - "Bad Request", serverul nu a putut procesa cererea din cauza unei greseli din partea clientului
+401 - "Unauthorized", cererea nu a fost procesata pentru ca ii lipsesc datele de autentificare care valideaza cererea
+403 - "Forbidden", serverul a inteles cererea, dar refuza executia acesteia. Eroarea asta are legatura cu logica din spatele design-ului aplicatiei
+404 - "Not Found", serverul nu gaseste resursa ceruta
+500 - "Internal Server Error", e o eroare generica care indica faptul ca serverul nu a putut indeplini cererea dintr-o cauza neprevazuta
+
+3. Care este diferența între HTTP și HTTPS?
+Ambele sunt protocoale de transfer a datelor prin web, dar difera gradul de securitate dintre ele.
+
+HTTP: 
+- transmite datele fara sa le encripteze
+- foloseste portul 80
+- nu verifica certificatele digitale ale website-urilor
+HTTPS:
+- transmite datele folosing encriptie
+- foloseste portul 443
+- verifica certificatele digitale ale website-urilor

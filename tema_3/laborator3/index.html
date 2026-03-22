@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagina Principală</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1 id="welcome-message">Bine ai venit!</h1>
+        <p id="visit-counter">Vizite: 0</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="preferences.html">Setări Preferințe</a></li>
+            <li><a href="cookies-info.html">Vizualizare Cookies</a></li>
+            <li><a href="login.html">Autentificare</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <section>
+            <h2>Cookie-uri Active</h2>
+            <table id="cookies-table">
+                <thead>
+                    <tr>
+                        <th>Nume</th>
+                        <th>Valoare</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Cookie-urile vor fi populate aici -->
+                </tbody>
+            </table>
+        </section>
+
+        <section>
+            <h2>Date din localStorage</h2>
+            <table id="localstorage-table">
+                <thead>
+                    <tr>
+                        <th>Cheie</th>
+                        <th>Valoare</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Datele din localStorage vor fi populate aici -->
+                </tbody>
+            </table>
+        </section>
+
+        <section>
+            <h2>Date din sessionStorage</h2>
+            <table id="sessionstorage-table">
+                <thead>
+                    <tr>
+                        <th>Cheie</th>
+                        <th>Valoare</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Datele din sessionStorage vor fi populate aici -->
+                </tbody>
+            </table>
+        </section>
+
+        <section>
+            <button id="delete-all-btn">Șterge Tot</button>
+        </section>
+    </main>
+
+    <script src="js/cookies.js"></script>
+    <script src="js/storage.js"></script>
+    <script>
+        // Funcție pentru actualizarea mesajului de bun venit
+        function updateWelcomeMessage() {
+            const username = CookieManager.get('username') || 'Vizitator';
+            document.getElementById('welcome-message').textContent = `Bine ai venit, ${username}!`;
+        }
+
+        // Funcție pentru actualizarea contorului de vizite
+        function updateVisitCounter() {
+            let visits = parseInt(CookieManager.get('visits')) || 0;
+            visits++;
+            CookieManager.set('visits', visits.toString());
+            document.getElementById('visit-counter').textContent = `Vizite: ${visits}`;
+        }
+
+        // Funcție pentru aplicarea temei
+        function applyTheme() {
+            const theme = CookieManager.get('theme') || 'light';
+            document.body.className = theme;
+        }
+
+        // Funcție pentru popularea tabelului cu cookie-uri
+        function populateCookiesTable() {
+            const cookies = CookieManager.getAll();
+            const tbody = document.querySelector('#cookies-table tbody');
+            tbody.innerHTML = '';
+
+            for (const [name, value] of Object.entries(cookies)) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${name}</td>
+                    <td>${value}</td>
+                `;
+                tbody.appendChild(row);
+            }
+        }
+
+        // Funcție pentru popularea tabelului cu localStorage
+        function populateLocalStorageTable() {
+            const data = StorageManager.getAllLocal();
+            const tbody = document.querySelector('#localstorage-table tbody');
+            tbody.innerHTML = '';
+
+            for (const [key, value] of Object.entries(data)) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${key}</td>
+                    <td>${JSON.stringify(value)}</td>
+                `;
+                tbody.appendChild(row);
+            }
+        }
+
+        // Funcție pentru popularea tabelului cu sessionStorage
+        function populateSessionStorageTable() {
+            const data = StorageManager.getAllSession();
+            const tbody = document.querySelector('#sessionstorage-table tbody');
+            tbody.innerHTML = '';
+
+            for (const [key, value] of Object.entries(data)) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${key}</td>
+                    <td>${JSON.stringify(value)}</td>
+                `;
+                tbody.appendChild(row);
+            }
+        }
+
+        // Funcție pentru ștergerea tuturor datelor
+        function deleteAllData() {
+            if (confirm('Ești sigur că vrei să ștergi toate cookie-urile și datele din storage?')) {
+                CookieManager.deleteAll();
+                StorageManager.clearLocal();
+                StorageManager.clearSession();
+
+                // Reîmprospătare pagină pentru a reflecta schimbările
+                location.reload();
+            }
+        }
+
+        // Inițializare când pagina se încarcă
+        document.addEventListener('DOMContentLoaded', function() {
+            updateWelcomeMessage();
+            updateVisitCounter();
+            applyTheme();
+            populateCookiesTable();
+            populateLocalStorageTable();
+            populateSessionStorageTable();
+
+            // Adăugare event listener pentru butonul de ștergere
+            document.getElementById('delete-all-btn').addEventListener('click', deleteAllData);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setări Preferințe</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Setări Preferințe</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Acasă</a></li>
+                <li><a href="cookies-info.html">Vizualizare Cookies</a></li>
+                <li><a href="login.html">Autentificare</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section>
+            <h2>Configurați Preferințele</h2>
+
+            <form id="preferences-form">
+                <div class="form-group">
+                    <label for="username">Nume utilizator:</label>
+                    <input type="text" id="username" name="username" placeholder="Introduceți numele dvs.">
+                </div>
+
+                <div class="form-group">
+                    <label for="theme">Tema:</label>
+                    <select id="theme" name="theme">
+                        <option value="light">Luminos</option>
+                        <option value="dark">Întunecat</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="language">Limba:</label>
+                    <select id="language" name="language">
+                        <option value="ro">Română</option>
+                        <option value="en">English</option>
+                        <option value="fr">Français</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="font-size">Dimensiune font:</label>
+                    <select id="font-size" name="font-size">
+                        <option value="14px">14px</option>
+                        <option value="16px">16px</option>
+                        <option value="18px">18px</option>
+                        <option value="20px">20px</option>
+                    </select>
+                </div>
+
+                <button type="submit">Salvează Preferințele</button>
+            </form>
+
+            <div id="success-message" class="success-message" style="display: none;">
+                Preferințele au fost salvate cu succes! Veți fi redirecționat către pagina principală...
+            </div>
+        </section>
+    </main>
+
+    <script src="js/cookies.js"></script>
+    <script src="js/storage.js"></script>
+    <script>
+        // Funcție pentru aplicarea temei curente
+        function applyTheme() {
+            const theme = CookieManager.get('theme') || 'light';
+            document.body.className = theme;
+        }
+
+        // Funcție pentru aplicarea dimensiunii fontului
+        function applyFontSize() {
+            const fontSize = StorageManager.getLocal('font-size') || '16px';
+            document.body.style.fontSize = fontSize;
+        }
+
+        // Funcție pentru pre-popularea formularului
+        function populateForm() {
+            // Pre-populare nume utilizator din cookie
+            const username = CookieManager.get('username') || '';
+            document.getElementById('username').value = username;
+
+            // Pre-populare temă din cookie
+            const theme = CookieManager.get('theme') || 'light';
+            document.getElementById('theme').value = theme;
+
+            // Pre-populare limbă din localStorage
+            const language = StorageManager.getLocal('language') || 'ro';
+            document.getElementById('language').value = language;
+
+            // Pre-populare dimensiune font din localStorage
+            const fontSize = StorageManager.getLocal('font-size') || '16px';
+            document.getElementById('font-size').value = fontSize;
+        }
+
+        // Funcție pentru salvarea preferințelor
+        function savePreferences(event) {
+            event.preventDefault();
+
+            // Obținere valori din formular
+            const username = document.getElementById('username').value.trim();
+            const theme = document.getElementById('theme').value;
+            const language = document.getElementById('language').value;
+            const fontSize = document.getElementById('font-size').value;
+
+            // Salvare în cookie-uri
+            if (username) {
+                CookieManager.set('username', username);
+            }
+            CookieManager.set('theme', theme);
+
+            // Salvare în localStorage
+            StorageManager.setLocal('language', language);
+            StorageManager.setLocal('font-size', fontSize);
+
+            // Afișare mesaj de succes
+            const successMessage = document.getElementById('success-message');
+            successMessage.style.display = 'block';
+
+            // Ascundere formular
+            document.getElementById('preferences-form').style.display = 'none';
+
+            // Redirecționare către index.html după 2 secunde
+            setTimeout(function() {
+                window.location.href = 'index.html';
+            }, 2000);
+        }
+
+        // Inițializare când pagina se încarcă
+        document.addEventListener('DOMContentLoaded', function() {
+            applyTheme();
+            applyFontSize();
+            populateForm();
+
+            // Adăugare event listener pentru formular
+            document.getElementById('preferences-form').addEventListener('submit', savePreferences);
+        });
+    </script>
+</body>
+</html>

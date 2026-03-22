@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autentificare</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Autentificare</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Acasă</a></li>
+                <li><a href="preferences.html">Setări Preferințe</a></li>
+                <li><a href="cookies-info.html">Vizualizare Cookies</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section>
+            <h2>Conectați-vă la cont</h2>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Nume utilizator:</label>
+                    <input type="text" id="username" name="username" required placeholder="Introduceți numele de utilizator">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Parolă:</label>
+                    <input type="password" id="password" name="password" required placeholder="Introduceți parola">
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <label for="remember-me">
+                        <input type="checkbox" id="remember-me" name="remember-me">
+                        Ține-mă minte
+                    </label>
+                </div>
+
+                <button type="submit">Autentificare</button>
+            </form>
+
+            <div id="error-message" class="error-message" style="display: none;"></div>
+            <div id="success-message" class="success-message" style="display: none;"></div>
+
+            <p class="register-link">
+                Nu aveți cont? <a href="register.html">Înregistrați-vă aici</a>
+            </p>
+        </section>
+    </main>
+
+    <script src="js/cookies.js"></script>
+    <script src="js/storage.js"></script>
+    <script>
+        // Funcție pentru aplicarea temei curente
+        function applyTheme() {
+            const theme = CookieManager.get('theme') || 'light';
+            document.body.className = theme;
+        }
+
+        // Funcție pentru aplicarea dimensiunii fontului
+        function applyFontSize() {
+            const fontSize = StorageManager.getLocal('font-size') || '16px';
+            document.body.style.fontSize = fontSize;
+        }
+
+        // Funcție pentru generarea unui sessionId random
+        function generateSessionId() {
+            return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        // Funcție pentru inițializarea utilizatorilor de test
+        function initializeDefaultUsers() {
+            const existingUsers = StorageManager.getLocal('users');
+            if (!existingUsers) {
+                const defaultUsers = [
+                    { id: 1, username: 'admin', password: 'password', email: 'admin@example.com' },
+                    { id: 2, username: 'student', password: 'student123', email: 'student@example.com' }
+                ];
+                StorageManager.setLocal('users', defaultUsers);
+                console.log('Utilizatori de test creați:', defaultUsers);
+            }
+        }
+
+        // Funcție pentru pre-popularea username-ului dacă "ține-mă minte" era activ
+        function populateRememberedUsername() {
+            const rememberedUsername = StorageManager.getLocal('remembered_username');
+            if (rememberedUsername) {
+                document.getElementById('username').value = rememberedUsername;
+                document.getElementById('remember-me').checked = true;
+            }
+        }
+
+        // Funcție pentru autentificare
+        function authenticateUser(username, password) {
+            const users = StorageManager.getLocal('users') || [];
+            return users.find(user => user.username === username && user.password === password);
+        }
+
+        // Funcție pentru crearea sesiunii
+        function createSession(user) {
+            const sessionData = {
+                userId: user.id,
+                username: user.username,
+                email: user.email,
+                loginTime: new Date().toISOString(),
+                sessionId: generateSessionId()
+            };
+
+            StorageManager.setSession('current_session', sessionData);
+            return sessionData;
+        }
+
+        // Funcție pentru gestionarea autentificării
+        function handleLogin(event) {
+            event.preventDefault();
+
+            // Ascundere mesaje anterioare
+            document.getElementById('error-message').style.display = 'none';
+            document.getElementById('success-message').style.display = 'none';
+
+            // Obținere valori din formular
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('remember-me').checked;
+
+            // Validare input
+            if (!username || !password) {
+                showError('Vă rugăm să completați toate câmpurile.');
+                return;
+            }
+
+            // Autentificare
+            const user = authenticateUser(username, password);
+            if (!user) {
+                showError('Nume utilizator sau parolă incorectă.');
+                return;
+            }
+
+            // Gestionare "ține-mă minte"
+            if (rememberMe) {
+                StorageManager.setLocal('remembered_username', username);
+            } else {
+                StorageManager.removeLocal('remembered_username');
+            }
+
+            // Creare sesiune
+            const sessionData = createSession(user);
+
+            // Afișare mesaj de succes
+            showSuccess(`Bine ați venit, ${user.username}! Veți fi redirecționat către dashboard...`);
+
+            // Redirecționare către dashboard după 2 secunde
+            setTimeout(function() {
+                window.location.href = 'dashboard.html';
+            }, 2000);
+        }
+
+        // Funcție pentru afișarea erorilor
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        // Funcție pentru afișarea mesajelor de succes
+        function showSuccess(message) {
+            const successDiv = document.getElementById('success-message');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+        }
+
+        // Inițializare când pagina se încarcă
+        document.addEventListener('DOMContentLoaded', function() {
+            applyTheme();
+            applyFontSize();
+            initializeDefaultUsers();
+            populateRememberedUsername();
+
+            // Adăugare event listener pentru formular
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
+        });
+    </script>
+</body>
+</html>
