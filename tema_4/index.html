@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator MVC</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="calculator">
+        <section class="display">
+            <div id="expression" class="expression">0</div>
+            <div id="result" class="result">0</div>
+        </section>
+        <section class="buttons">
+            <button type="button" data-action="clear">AC</button>
+            <button type="button" data-action="operator" data-value="/">÷</button>
+            <button type="button" data-action="operator" data-value="*">×</button>
+            <button type="button" data-action="equals">=</button>
+            
+            <button type="button" data-action="digit" data-value="7">7</button>
+            <button type="button" data-action="digit" data-value="8">8</button>
+            <button type="button" data-action="digit" data-value="9">9</button>
+            <button type="button" data-action="operator" data-value="-">−</button>
+            
+            <button type="button" data-action="digit" data-value="4">4</button>
+            <button type="button" data-action="digit" data-value="5">5</button>
+            <button type="button" data-action="digit" data-value="6">6</button>
+            <button type="button" data-action="operator" data-value="+">+</button>
+
+            <button type="button" data-action="digit" data-value="1">1</button>
+            <button type="button" data-action="digit" data-value="2">2</button>
+            <button type="button" data-action="digit" data-value="3">3</button>
+            <button type="button" data-action="digit" data-value="0">0</button>
+        </section>
+    </main>
+
+    <script src="model.js"></script>
+    <script src="view.js"></script>
+    <script src="controller.js"></script>
+</body>
+</html>
